@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CloudInventory — Smart Cloud Inventory Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#0f172a">
+  <style>
+    :root{
+      --bg:#0f172a; /* deep navy */
+      --card:#0b1220;
+      --glass: rgba(255,255,255,0.06);
+      --accent-1: #7c3aed; /* violet */
+      --accent-2: #06b6d4; /* cyan */
+      --muted: #9aa4bf;
+      --glass-border: rgba(255,255,255,0.08);
+      --radius: 14px;
+      --ease: cubic-bezier(.2,.9,.2,1);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent 6%),
+                  radial-gradient(900px 500px at 90% 90%, rgba(6,182,212,0.08), transparent 8%),
+                  linear-gradient(180deg,var(--bg) 0%, #071028 100%);
+      color:#e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      padding-bottom:80px;
+    }
+    .container{max-width:1100px;margin:0 auto;padding:36px 22px}
+
+    /* NAV */
+    header{position:fixed;left:0;right:0;top:16px;z-index:60}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:20px;backdrop-filter:blur(8px);padding:10px 18px;border-radius:12px;margin:0 auto;max-width:1200px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid var(--glass-border)}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(12,18,36,0.45)}
+    .logo svg{filter:drop-shadow(0 3px 12px rgba(7,10,25,0.6));}
+    nav a{color:var(--muted);text-decoration:none;font-weight:600;padding:8px 10px;border-radius:8px}
+    nav a:hover{color:#fff;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent)}
+    .cta{display:flex;gap:8px;align-items:center}
+    .btn{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(7,10,25,0.5);transition:transform .22s var(--ease),box-shadow .22s var(--ease)}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:8px 12px;font-weight:600}
+    .btn:active{transform:translateY(1px)}
+
+    /* HERO */
+    .hero{padding-top:140px;padding-bottom:64px;display:grid;grid-template-columns:1fr 420px;gap:36px;align-items:center}
+    .hero h1{font-size:36px;margin:0 0 12px 0;line-height:1.05}
+    .lead{color:var(--muted);font-size:16px;margin-bottom:20px}
+    .hero .kpis{display:flex;gap:14px;margin-top:24px}
+    .kpi{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:10px 14px;border-radius:12px;border:1px solid var(--glass-border);min-width:130px}
+    .kpi strong{display:block;font-size:18px}
+
+    .mock{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 10px 50px rgba(7,12,24,0.6);
+    }
+    .mock .screen{height:340px;border-radius:10px;background:linear-gradient(180deg, rgba(12,18,36,0.5), rgba(8,12,22,0.2));display:flex;flex-direction:column;overflow:hidden;padding:14px}
+    .mock .topbar{height:36px;display:flex;align-items:center;gap:8px}
+    .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.08)}
+    .table{margin-top:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:8px;padding:10px;flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .cell{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);font-size:12px}
+
+    /* FEATURES */
+    section{padding:72px 0}
+    .grid{display:grid;gap:18px}
+    .features .grid{grid-template-columns:repeat(3,1fr)}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:12px;border:1px solid var(--glass-border);box-shadow:0 8px 30px rgba(7,10,25,0.35)}
+    .card h3{margin:8px 0 6px 0}
+    .small{color:var(--muted);font-size:13px}
+
+    /* Workflow */
+    .workflow{display:flex;gap:18px}
+    .step{flex:1;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.03);text-align:center}
+    .bubble{width:56px;height:56px;border-radius:50%;display:inline-grid;place-items:center;margin:0 auto 12px auto;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));box-shadow:0 8px 30px rgba(12,15,40,0.5);font-weight:800}
+
+    /* Roadmap vertical timeline */
+    .timeline{position:relative;padding-left:34px}
+    .timeline:before{content:'';position:absolute;left:14px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,var(--accent-1),var(--accent-2));opacity:0.7;border-radius:2px}
+    .titem{position:relative;padding:12px 12px 12px 24px;margin-bottom:18px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+    .titem .dot{position:absolute;left:-4px;top:18px;width:14px;height:14px;border-radius:50%;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));box-shadow:0 6px 16px rgba(12,15,40,0.6)}
+
+    /* About */
+    .about{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center}
+
+    footer{margin-top:36px;padding:36px 0;color:var(--muted)}
+
+    /* Responsive */
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr;gap:20px;padding-top:120px}
+      .features .grid{grid-template-columns:repeat(2,1fr)}
+      .about{grid-template-columns:1fr}
+      header{top:10px}
+    }
+    @media (max-width:640px){
+      .nav{padding:10px 12px;border-radius:10px}
+      .features .grid{grid-template-columns:1fr}
+      .kpi{min-width:100px}
+      .mock .screen{height:220px}
+      .hero h1{font-size:28px}
+    }
+
+    /* Modal */
+    .modal{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:none;align-items:center;justify-content:center;padding:20px}
+    .modal.show{display:flex}
+    .panel{background:linear-gradient(180deg, #061024, #071226);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);min-width:320px;max-width:420px}
+    .form-row{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+    label{font-size:13px;color:var(--muted)}
+    input{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:8px;color:#eaf3ff}
+    .muted{color:var(--muted);font-size:13px}
+
+    /* micro interactions */
+    .fade-up{transform:translateY(8px);opacity:0;animation:fadeUp .7s .12s forwards}
+    @keyframes fadeUp{to{transform:none;opacity:1}}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav container">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12l6-6 6 6 6-6" stroke="white" stroke-opacity="0.9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:800">CloudInventory</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Smarter stock. Less guesswork.</div>
+        </div>
+      </div>
+      <nav style="display:flex;gap:8px;align-items:center">
+        <a href="#features">Features</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#about">About</a>
+        <div class="cta">
+          <button class="btn secondary" id="open-login">Login</button>
+          <button class="btn" id="open-signup">Sign up</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="hero">
+      <div>
+        <h1 class="fade-up">Cloud inventory management built for speed, visibility and scale</h1>
+        <p class="lead">Track stock across warehouses, unify supplier feeds, automate reordering and get predictive insights — all from a single cloud dashboard.
+        </p>
+        <div style="display:flex;gap:12px;align-items:center">
+          <button class="btn" onclick="scrollToSection('features')">Get started — it's free</button>
+          <button class="btn secondary" onclick="alert('Demo coming soon')">Watch demo</button>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi">
+            <strong>99.9%</strong>
+            <span class="small">Uptime SLA</span>
+          </div>
+          <div class="kpi">
+            <strong>40%</strong>
+            <span class="small">Avg. stockouts reduced</span>
+          </div>
+          <div class="kpi">
+            <strong>Auto Reorder</strong>
+            <span class="small">Rules, thresholds & schedules</span>
+          </div>
+        </div>
+
+        <div style="margin-top:28px;color:var(--muted);font-size:13px">
+          <strong>Details</strong>
+          <p class="muted" style="margin:8px 0 0">CloudInventory is a SaaS-first inventory platform that unifies warehouse data, supplier feeds and sales channels. Built with microservices, real-time event pipelines and role-based access — ideal for SMBs to enterprise teams.</p>
+        </div>
+      </div>
+
+      <aside class="mock fade-up" aria-hidden="true">
+        <div class="screen">
+          <div class="topbar"><div class="dot"></div><div class="dot" style="opacity:0.8"></div><div class="dot" style="opacity:0.6"></div></div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+            <div style="flex:1">
+              <div style="display:flex;gap:8px;align-items:center"><div style="width:18px;height:18px;border-radius:4px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2))"></div><div style="font-size:12px;color:var(--muted)">Warehouse — East</div></div>
+              <div style="font-weight:700;margin-top:6px">In stock: 1,482</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--muted)">Backorders</div>
+              <div style="font-weight:700">34</div>
+            </div>
+          </div>
+          <div class="table">
+            <div class="cell">SKU: 1001<br><small class="small">Available</small></div>
+            <div class="cell">SKU: 1023<br><small class="small">Allocated</small></div>
+            <div class="cell">SKU: 1108<br><small class="small">Incoming</small></div>
+            <div class="cell">SKU: 1320<br><small class="small">Reserved</small></div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section id="features">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <h2>Features that remove friction</h2>
+        <div class="muted">From essentials to advanced automation — built to scale.</div>
+      </div>
+
+      <div class="features grid">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="bubble" aria-hidden>AI</div>
+            <div>
+              <h3>Demand forecasting</h3>
+              <div class="small">Short-term and seasonal forecasts using sales history and trends.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="bubble" aria-hidden>⟳</div>
+            <div>
+              <h3>Auto reorder</h3>
+              <div class="small">Custom reorder rules, supplier lead time and safety stock calculations.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="bubble" aria-hidden>🔗</div>
+            <div>
+              <h3>Integrations</h3>
+              <div class="small">Connect ERP, e‑commerce, shipping carriers and barcode scanners.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="bubble" aria-hidden>🔒</div>
+            <div>
+              <h3>Role-based access</h3>
+              <div class="small">Fine-grained permissions and audit logs for compliance.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="bubble" aria-hidden>📊</div>
+            <div>
+              <h3>Live analytics</h3>
+              <div class="small">Turn raw events into dashboards, alerts and scheduled reports.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="bubble" aria-hidden>⚡</div>
+            <div>
+              <h3>Edge & offline</h3>
+              <div class="small">Local scanning clients sync to cloud for low-latency operations.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="workflow">
+      <h2 style="margin-bottom:12px">Workflow — simple, observable</h2>
+      <p class="muted" style="margin-bottom:18px">A clear flow from receiving to reorder — each step observable with automated actions and alerts.</p>
+
+      <div class="workflow">
+        <div class="step card">
+          <div class="bubble">1</div>
+          <h4>Receive</h4>
+          <div class="small">Scan inbound stock, validate against purchase orders, record lot & expiry.</div>
+        </div>
+        <div class="step card">
+          <div class="bubble">2</div>
+          <h4>Store</h4>
+          <div class="small">Smart bin placement with heatmaps to reduce picking time.</div>
+        </div>
+        <div class="step card">
+          <div class="bubble">3</div>
+          <h4>Pick & Pack</h4>
+          <div class="small">Batch picks, mobile scanning and packing checklists.</div>
+        </div>
+        <div class="step card">
+          <div class="bubble">4</div>
+          <h4>Reorder</h4>
+          <div class="small">Automatic purchase suggestions and supplier orchestration.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <h2 style="margin-bottom:12px">Roadmap</h2>
+      <p class="muted" style="margin-bottom:18px">Where CloudInventory is headed — pragmatic milestones to expand reliability and integrations.</p>
+
+      <div class="timeline">
+        <div class="titem">
+          <div class="dot"></div>
+          <strong>Q3 2025 — Core v1</strong>
+          <div class="small">Inventory tracking, multichannel sync, basic forecasting and mobile scanning.</div>
+        </div>
+
+        <div class="titem">
+          <div class="dot"></div>
+          <strong>Q4 2025 — Integrations</strong>
+          <div class="small">ERP connectors, shipping APIs and supplier portal.</div>
+        </div>
+
+        <div class="titem">
+          <div class="dot"></div>
+          <strong>H1 2026 — Advanced analytics</strong>
+          <div class="small">Demand signals, anomaly detection and automated reporting pipelines.</div>
+        </div>
+
+        <div class="titem">
+          <div class="dot"></div>
+          <strong>H2 2026 — Enterprise</strong>
+          <div class="small">SAML SSO, multi-tenant policies and advanced SLA features.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <h2>About</h2>
+      <div class="about">
+        <div>
+          <p class="muted">CloudInventory was designed by operations and engineering teams who were tired of opaque stock levels and manual reconciliations. Our mission: give teams one truth-of-stock, reduce waste and automate replenishment so businesses can focus on growth.</p>
+
+          <div style="display:flex;gap:12px;margin-top:18px">
+            <div class="card" style="flex:1">
+              <h4>Secure by design</h4>
+              <div class="small">Encrypted at rest & transit, periodic pen-tests and role-based access.</div>
+            </div>
+            <div class="card" style="flex:1">
+              <h4>Reliable</h4>
+              <div class="small">Event-driven architecture, retries and near real-time replication across regions.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:right">
+          <div style="font-weight:700;font-size:20px">Trusted by operations teams</div>
+          <div class="muted" style="margin-top:10px">Start with a free trial, scale to enterprise.</div>
+          <div style="margin-top:20px"><button class="btn" onclick="scrollToSection('open-signup')">Start free trial</button></div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <strong>CloudInventory</strong>
+          <div class="muted">© 2025 CloudInventory Inc.</div>
+        </div>
+        <div class="muted">Contact: hello@cloudinventory.example · +91 98765 43210</div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Modal: Login / Signup -->
+  <div class="modal" id="modal">
+    <div class="panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div id="modal-title" style="font-weight:700">Login</div>
+          <div class="muted" id="modal-sub">Access your CloudInventory account</div>
+        </div>
+        <button class="btn secondary" id="close-modal">Close</button>
+      </div>
+
+      <form id="modal-form">
+      <div class="form-row">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="name@company.com" required>
+      </div>
+      <div class="form-row">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" placeholder="••••••••" required>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">
+        <label class="muted"><input type="checkbox" id="remember"> Remember me</label>
+        <a href="#" class="muted" style="text-decoration:underline">Forgot?</a>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" type="submit">Continue</button>
+        <button class="btn secondary" type="button" id="switch-sign">Create account</button>
+      </div>
+
+      <div style="text-align:center;margin:15px 0;position:relative;">
+        <span style="background:#131111;padding:0 5px;position:relative;z-index:1;">or</span>
+        <hr style="position:absolute;top:50%;left:0;width:100%;border:none;border-top:1px solid #948585;z-index:0;">
+      </div>
+
+      <!-- Google Sign-In Button -->
+      <button type="button" id="google-login" 
+        style="display:flex;align-items:center;gap:10px;justify-content:center;width:100%;
+              border:1px solid #ccc;background:#fff;padding:8px;border-radius:5px;cursor:pointer;">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+            alt="Google" width="20" height="20">
+        <span onclick="login()" >Sign in with Google</span>
+      </button>
+    </form>
+    </div>
+  </div>
+
+
+  <script>
+    function login() {
+      window.location.href = "https://localhost:9443/api/login/google";
+    }
+  </script>
+
+
+  <script>
+    // helpers
+    function $(s){return document.querySelector(s)}
+    function scrollToSection(id){
+      const el = document.getElementById(id);
+      if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+
+    // modal logic
+    const modal = $('#modal');
+    const openLogin = $('#open-login');
+    const openSignup = $('#open-signup');
+    const closeModal = $('#close-modal');
+    const modalTitle = $('#modal-title');
+    const modalSub = $('#modal-sub');
+    const switchSign = $('#switch-sign');
+    const form = $('#modal-form');
+
+    function openModal(kind){
+      modal.classList.add('show');
+      if(kind === 'signup'){
+        modalTitle.textContent = 'Create account';
+        modalSub.textContent = 'Start your free trial — no credit card required';
+        switchSign.textContent = 'Back to login';
+      } else {
+        modalTitle.textContent = 'Login';
+        modalSub.textContent = 'Access your CloudInventory account';
+        switchSign.textContent = 'Create account';
+      }
+    }
+
+    openLogin.addEventListener('click', ()=>openModal('login'));
+    openSignup.addEventListener('click', ()=>openModal('signup'));
+    closeModal.addEventListener('click', ()=>modal.classList.remove('show'));
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) modal.classList.remove('show') });
+
+    switchSign.addEventListener('click', ()=>{
+      if(modalTitle.textContent.includes('Create')) openModal('login');
+      else openModal('signup');
+    });
+
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const data = {email:form.email.value};
+      // fake submit — integrate with your backend
+      console.log('submit', data);
+      alert('This demo form does not submit. Integrate with your auth backend.');
+      modal.classList.remove('show');
+    });
+
+    // accessibility: close modal with Esc
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') modal.classList.remove('show') });
+  </script>
+</body>
+</html>

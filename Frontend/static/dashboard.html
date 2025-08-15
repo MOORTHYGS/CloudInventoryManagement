@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cloud Inventory Management</title>
+  <meta name="color-scheme" content="dark light">
+  <style>
+    /* =====================
+       CSS DESIGN SYSTEM
+       ===================== */
+    :root {
+      /* Base palette (HSL for easy theming) */
+      --hue: 250;               /* accent hue */
+      --sat: 86%;               /* accent saturation */
+      --bg: hsl(240 14% 9%);    /* page background */
+      --surface: hsl(240 16% 14%);
+      --surface-2: hsl(240 16% 18%);
+      --text: hsl(0 0% 98%);
+      --muted: hsl(240 6% 70%);
+      --ring: hsl(var(--hue) var(--sat) 60% / 0.5);
+      --border: hsl(240 14% 28% / 0.6);
+      --success: hsl(145 70% 45%);
+      --warn: hsl(40 90% 55%);
+      --danger: hsl(0 80% 60%);
+
+      /* Gradients */
+      --accent-1: hsl(var(--hue) var(--sat) 60%);
+      --accent-2: hsl(calc(var(--hue) + 40) 90% 60%);
+      --accent-3: hsl(calc(var(--hue) - 40) 90% 60%);
+      --glass: linear-gradient(180deg, hsl(240 16% 18% / 0.9), hsl(240 16% 14% / 0.9));
+
+      /* Sizing */
+      --radius: 18px;
+      --radius-lg: 22px;
+      --shadow-1: 0 10px 30px hsl(240 50% 2% / 0.4);
+      --shadow-2: 0 30px 80px hsl(240 50% 2% / 0.6);
+    }
+
+    /* Light theme overrides */
+    html[data-theme="light"]{
+      --bg: hsl(0 0% 100%);
+      --surface: hsl(0 0% 100%);
+      --surface-2: hsl(240 6% 96%);
+      --text: hsl(240 10% 10%);
+      --muted: hsl(240 6% 40%);
+      --border: hsl(240 6% 80% / 0.8);
+      --glass: linear-gradient(180deg, hsl(240 6% 100% / 0.9), hsl(240 6% 98% / 0.9));
+      --shadow-1: 0 8px 24px hsl(240 20% 20% / 0.12);
+      --shadow-2: 0 16px 48px hsl(240 20% 20% / 0.12);
+    }
+
+    /* Global reset */
+    *{ box-sizing: border-box }
+    html,body{ height:100% }
+    body {
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background:
+        radial-gradient(1200px 800px at 80% -10%, hsl(var(--hue) 80% 58% / 0.10), transparent 60%),
+        radial-gradient(900px 600px at -10% 30%, hsl(calc(var(--hue) - 40) 70% 60% / 0.08), transparent 55%),
+        radial-gradient(1000px 600px at 110% 80%, hsl(calc(var(--hue) + 40) 70% 58% / 0.10), transparent 60%),
+        var(--bg);
+      background-attachment: fixed;
+    }
+
+    .app {
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ============ Sidebar ============ */
+    .sidebar {
+      position: sticky; top: 0; align-self: start; height: 100dvh;
+      backdrop-filter: blur(10px);
+      background: var(--glass);
+      border-right: 1px solid var(--border);
+      box-shadow: var(--shadow-1);
+      padding: 22px 16px;
+      display:flex; flex-direction:column; gap:14px;
+    }
+    .brand {
+      display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:14px;
+      font-weight:700; letter-spacing:.2px; font-size: clamp(16px, 1.6vw, 18px);
+    }
+    .brand .logo {
+      width:38px; height:38px; display:grid; place-items:center; border-radius:12px;
+      background: conic-gradient(from 180deg, var(--accent-1), var(--accent-2), var(--accent-3), var(--accent-1));
+      box-shadow: 0 6px 20px hsl(var(--hue) 80% 50% / .45);
+    }
+    .sidebar .nav { margin-top: 10px; display:flex; flex-direction:column; gap:6px; }
+    .nav a{
+      --active: 0;
+      display:flex; align-items:center; gap:12px; padding: 12px 12px;
+      border-radius: 12px; text-decoration:none; color: color-mix(in hsl, var(--text), transparent 10%);
+      border: 1px solid color-mix(in hsl, var(--border), transparent calc(60% - (var(--active) * 40%)));
+      background: linear-gradient(180deg, hsl(0 0% 100% / calc(var(--active) * 0.06)), transparent);
+      transition: .2s ease;
+    }
+    .nav a:hover{ transform: translateY(-1px); border-color: var(--ring); }
+    .nav a.active{ --active: 1; background: linear-gradient(180deg, hsl(0 0% 100% / 0.06), transparent); border-color: var(--ring); }
+    .nav svg{ width:20px; height:20px; opacity:.9 }
+
+    .sidebar .spacer{ flex:1 }
+    .sidebar .foot { font-size: 12px; color: var(--muted) }
+
+    /* ============ Main ============ */
+    .main {
+      display:flex; flex-direction:column; gap:20px; padding: 20px clamp(16px, 3vw, 28px);
+    }
+
+    .topbar {
+      display:flex; align-items:center; gap:12px;
+    }
+    .menu-btn{ display:none }
+    .topbar .search {
+      flex:1; display:flex; gap:10px; align-items:center; background: var(--surface-2); border:1px solid var(--border);
+      padding:10px 12px; border-radius: 999px; box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.05);
+    }
+    .search input{
+      flex:1; background:transparent; outline:none; border:none; color:var(--text);
+      font-size:14px;
+    }
+    .top-actions{ display:flex; gap:8px; align-items:center; }
+    .btn{
+      border:1px solid var(--border); background: linear-gradient(180deg, hsl(0 0% 100% / .06), transparent);
+      padding:10px 14px; border-radius: 14px; color: var(--text); font-weight:600; cursor:pointer;
+      transition:.2s ease; box-shadow: var(--shadow-1);
+    }
+    .btn:hover{ transform: translateY(-1px); border-color: var(--ring) }
+    .btn.accent{ border: 1px solid var(--ring); background:
+      radial-gradient(80% 120% at 20% 0%, hsl(var(--hue) 80% 60% / .18), transparent 60%),
+      linear-gradient(180deg, hsl(0 0% 100% / .08), transparent);
+    }
+    .avatar{ width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-weight:700; background: var(--surface-2); border:1px solid var(--border); }
+
+    /* KPI Cards */
+    .grid{ display:grid; gap:16px }
+    .kpis{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .card{
+      background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px; box-shadow: var(--shadow-1);
+    }
+    .kpi{ position:relative; overflow:hidden }
+    .kpi .label{ color: var(--muted); font-weight:600; font-size:12px; }
+    .kpi .value{ font-size: clamp(22px, 3vw, 30px); font-weight: 800; letter-spacing:.3px; }
+    .kpi .delta{ font-size:12px; font-weight:700 }
+    .chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background: hsl(0 0% 100% / .03) }
+    .spark{ position:absolute; inset:auto 0 0 auto; height:48px; width: 140px; opacity:.7 }
+
+    /* Filters */
+    .filters{ display:flex; gap:12px; align-items:center; flex-wrap:wrap }
+    .select, .input {
+      display:flex; align-items:center; gap:8px; padding: 10px 12px; border-radius: 12px; border:1px solid var(--border); background: var(--surface-2);
+    }
+    select, .filters input[type="text"]{
+      background:transparent; border:none; color:var(--text); outline:none; font-size:14px;
+    }
+
+    /* Table */
+    .table{ overflow:hidden }
+    table{ width: 100%; border-collapse: collapse; }
+    thead th{
+      text-align:left; font-size:12px; letter-spacing:.4px; text-transform:uppercase; color:var(--muted);
+      padding: 12px; position: sticky; top:0; background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td{ padding: 12px; border-bottom: 1px dashed var(--border); font-size:14px; }
+    tbody tr:hover{ background: hsl(0 0% 100% / .03) }
+    .status{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; }
+    .status.ok{ background: hsl(145 60% 46% / .12); color: var(--success); border:1px solid hsl(145 60% 46% / .35) }
+    .status.low{ background: hsl(40 90% 55% / .12); color: var(--warn); border:1px solid hsl(40 90% 55% / .35) }
+    .status.out{ background: hsl(0 80% 60% / .12); color: var(--danger); border:1px solid hsl(0 80% 60% / .35) }
+
+    .table-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px }
+    .pagination{ display:flex; gap:6px; align-items:center }
+    .page-btn{ padding: 8px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface-2); cursor:pointer }
+
+    /* Activity */
+    .activity { display:grid; grid-template-columns: 1fr 1fr; gap:14px }
+    .timeline{ list-style:none; padding:0; margin:0; display:grid; gap:12px }
+    .timeline li{ display:flex; gap:10px; }
+    .dot{ width:12px; height:12px; border-radius:50%; background: var(--accent-1); margin-top:6px; box-shadow: 0 0 0 4px hsl(var(--hue) 80% 60% / .12) }
+    .note{ background: var(--surface-2); border:1px dashed var(--border); padding:10px 12px; border-radius:12px; }
+
+    /* Modal */
+    dialog.modal{ border:none; border-radius: var(--radius-lg); padding:0; width:min(680px, 96vw); background: var(--surface); box-shadow: var(--shadow-2); }
+    .modal header{ display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-bottom:1px solid var(--border) }
+    .modal .content{ padding: 16px 18px; display:grid; gap:12px; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .field{ display:grid; gap:6px }
+    .field label{ font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase }
+    .field input, .field select{ padding:10px 12px; border-radius:12px; background: var(--surface-2); border:1px solid var(--border); color: var(--text) }
+    .modal .actions{ display:flex; justify-content:flex-end; gap:8px; padding: 16px 18px; border-top:1px solid var(--border) }
+
+    /* Toast */
+    .toast{ position: fixed; bottom: 18px; right: 18px; background: var(--surface); border:1px solid var(--ring); padding: 10px 14px; border-radius:14px; box-shadow: var(--shadow-1); opacity:0; transform: translateY(10px); transition:.3s ease }
+    .toast.show{ opacity:1; transform: translateY(0) }
+
+    /* Small screens */
+    @media (max-width: 980px){
+      .app{ grid-template-columns: 1fr }
+      .sidebar{ position: fixed; inset:0 auto 0 0; width: 76vw; max-width: 360px; z-index: 10; transform: translateX(-100%); transition: .25s ease }
+      .sidebar.open{ transform: translateX(0) }
+      .menu-btn{ display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:12px; border:1px solid var(--border); background: var(--surface-2) }
+      .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .activity{ grid-template-columns: 1fr }
+    }
+
+    /* Nice scrollbars */
+    ::-webkit-scrollbar{ height:12px; width:12px }
+    ::-webkit-scrollbar-thumb{ background: linear-gradient(180deg, var(--accent-1), var(--accent-2)); border-radius:999px; border:3px solid transparent; background-clip: padding-box }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12l6-6 6 6-6 6-6-6z"/>
+            <path d="M15 6l6 6-6 6" opacity=".7"/>
+          </svg>
+        </div>
+        Cloud Inventory
+      </div>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#" class="active"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12l9-9 9 9"/><path d="M9 21V9h6v12"/></svg> Dashboard</a>
+        <a href="#"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 10h18"/></svg> Inventory</a>
+        <a href="#"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10H3"/><path d="M7 6h10a4 4 0 014 4v4a4 4 0 01-4 4H7a4 4 0 01-4-4v-4a4 4 0 014-4z"/></svg> Orders</a>
+        <a href="#"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21V7"/><path d="M4 21V7"/><path d="M4 7l8-4 8 4"/></svg> Suppliers</a>
+        <a href="#"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c0 .66.26 1.3.73 1.77.47.47 1.11.73 1.77.73h.09a2 2 0 110 4h-.09c-.66 0-1.3.26-1.77.73z"/></svg> Locations</a>
+        <a href="#"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="M7 13l3 3 7-7"/></svg> Analytics</a>
+        <a href="#"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1v22"/><path d="M4 7h16"/><path d="M4 17h16"/></svg> Settings</a>
+      </nav>
+      <div class="spacer"></div>
+      <div class="foot">v1.0 • Made for teams</div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Open navigation">☰</button>
+        <div class="search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-3.5-3.5"/></svg>
+          <input id="searchInput" type="text" placeholder="Search SKU, name, category, location…" />
+        </div>
+        <div class="top-actions">
+          <button class="btn" id="themeToggle" title="Toggle theme">Theme</button>
+          <button class="btn accent" id="addItemBtn">+ Add Item</button>
+          <div class="avatar" aria-label="User">CI</div>
+        </div>
+      </header>
+
+      <!-- KPI Cards -->
+      <section class="grid kpis" id="kpis">
+        <!-- Cards are injected by JS -->
+      </section>
+
+      <!-- Filters & Actions -->
+      <section class="card filters">
+        <div class="select">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7h18M6 12h12M9 17h6"/></svg>
+          <select id="categoryFilter">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+        <div class="select">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>
+          <select id="stockFilter">
+            <option value="">Any Stock</option>
+            <option value="ok">OK</option>
+            <option value="low">Low</option>
+            <option value="out">Out</option>
+          </select>
+        </div>
+        <div class="select">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <select id="locationFilter">
+            <option value="">All Locations</option>
+          </select>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn" id="exportBtn" title="Export CSV">Export CSV</button>
+      </section>
+
+      <!-- Inventory Table -->
+      <section class="card table">
+        <table id="inventoryTable" aria-describedby="tableCaption">
+          <caption id="tableCaption" style="display:none">Filtered inventory items</caption>
+          <thead>
+            <tr>
+              <th data-key="sku">SKU</th>
+              <th data-key="name">Name</th>
+              <th data-key="category">Category</th>
+              <th data-key="stock" style="text-align:right">On Hand</th>
+              <th data-key="reorder" style="text-align:right">Reorder @</th>
+              <th data-key="location">Location</th>
+              <th data-key="updated">Updated</th>
+              <th data-key="price" style="text-align:right">Unit Price</th>
+              <th data-key="value" style="text-align:right">Stock Value</th>
+              <th>Health</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+        <div class="table-actions">
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </section>
+
+      <!-- Activity & Notes -->
+      <section class="activity">
+        <div class="card">
+          <h3 style="margin:0 0 8px 0">Recent Activity</h3>
+          <ul class="timeline" id="activity"></ul>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 8px 0">Notes</h3>
+          <div class="note">Tip: click a table header to sort. Use the search box for instant filtering. Try the Theme button to switch light/dark, or the Export button to download the current view.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Add Item Modal -->
+  <dialog class="modal" id="addModal">
+    <form method="dialog">
+      <header>
+        <strong>Add Inventory Item</strong>
+        <button class="btn" value="cancel">✕</button>
+      </header>
+      <div class="content">
+        <div class="field"><label>SKU</label><input id="fSku" required placeholder="SKU-0001"/></div>
+        <div class="field"><label>Name</label><input id="fName" required placeholder="Product name"/></div>
+        <div class="field"><label>Category</label>
+          <select id="fCategory"></select>
+        </div>
+        <div class="field"><label>Location</label><input id="fLocation" required placeholder="WH-A1"/></div>
+        <div class="field"><label>On Hand</label><input id="fStock" type="number" min="0" required placeholder="0"/></div>
+        <div class="field"><label>Reorder @</label><input id="fReorder" type="number" min="0" required placeholder="10"/></div>
+        <div class="field"><label>Unit Price</label><input id="fPrice" type="number" min="0" step="0.01" required placeholder="0.00"/></div>
+        <div class="field"><label>Updated</label><input id="fUpdated" type="date"/></div>
+      </div>
+      <div class="actions">
+        <button class="btn" value="cancel">Cancel</button>
+        <button class="btn accent" id="saveItemBtn" value="confirm">Save Item</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Saved</div>
+
+  <script>
+    // =====================
+    // Demo Data
+    // =====================
+    const categories = ["Electronics","Beverages","Apparel","Hardware","Produce","Pharmacy","Office"];
+    const locations = ["BLR-A1","BLR-B2","HOS-C1","MUM-A3","DEL-D4"];
+
+    const inventory = [
+      { sku:"ELX-1001", name:"Wireless Mouse", category:"Electronics", stock:86, reorder:20, location:"BLR-A1", updated:"2025-08-10", price:799.00 },
+      { sku:"ELX-1002", name:"Mechanical Keyboard", category:"Electronics", stock:15, reorder:15, location:"BLR-A1", updated:"2025-08-08", price:3499.00 },
+      { sku:"BEV-2001", name:"Cold Brew 350ml", category:"Beverages", stock:0, reorder:30, location:"HOS-C1", updated:"2025-08-09", price:120.00 },
+      { sku:"APP-3001", name:"Polo T-Shirt L", category:"Apparel", stock:52, reorder:25, location:"MUM-A3", updated:"2025-08-06", price:699.00 },
+      { sku:"HDW-4001", name:"Steel Screws (100)", category:"Hardware", stock:240, reorder:50, location:"DEL-D4", updated:"2025-08-02", price:149.00 },
+      { sku:"PRD-5001", name:"Organic Bananas (1kg)", category:"Produce", stock:8, reorder:12, location:"HOS-C1", updated:"2025-08-12", price:79.00 },
+      { sku:"PHR-6001", name:"Vitamin C 500mg", category:"Pharmacy", stock:120, reorder:40, location:"BLR-B2", updated:"2025-08-11", price:249.00 },
+      { sku:"OFF-7001", name:"A4 Copier Paper (500)", category:"Office", stock:34, reorder:20, location:"DEL-D4", updated:"2025-08-07", price:399.00 },
+      { sku:"ELX-1003", name:"USB-C Hub 6-in-1", category:"Electronics", stock:4, reorder:10, location:"BLR-B2", updated:"2025-08-12", price:2299.00 },
+      { sku:"BEV-2003", name:"Isotonic Drink 500ml", category:"Beverages", stock:60, reorder:22, location:"MUM-A3", updated:"2025-08-05", price:99.00 },
+      { sku:"APP-3002", name:"Athletic Socks (3)", category:"Apparel", stock:12, reorder:18, location:"MUM-A3", updated:"2025-08-11", price:249.00 },
+      { sku:"HDW-4003", name:"Hammer 16oz", category:"Hardware", stock:2, reorder:10, location:"DEL-D4", updated:"2025-08-03", price:799.00 }
+    ];
+
+    // =====================
+    // Helpers
+    // =====================
+    const $ = (q, el=document) => el.querySelector(q);
+    const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
+    const fmt = n => new Intl.NumberFormat(undefined, {maximumFractionDigits: 2}).format(n);
+    const fmtINR = n => new Intl.NumberFormat(undefined, { style:'currency', currency:'INR'}).format(n);
+
+    function health(stock, reorder){
+      if(stock <= 0) return {label:'Out', cls:'out'};
+      if(stock <= reorder) return {label:'Low', cls:'low'};
+      return {label:'OK', cls:'ok'};
+    }
+
+    function toast(msg){
+      const t = $('#toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(()=> t.classList.remove('show'), 1800);
+    }
+
+    // =====================
+    // State
+    // =====================
+    const state = {
+      q: '',
+      category: '',
+      stock: '',
+      location: '',
+      sortKey: 'updated',
+      sortDir: 'desc',
+      page: 1,
+      pageSize: 10,
+      data: [...inventory]
+    };
+
+    // =====================
+    // UI Setup
+    // =====================
+    function initFilters(){
+      const catSel = $('#categoryFilter');
+      const locSel = $('#locationFilter');
+      const fCat = $('#fCategory');
+
+      const cats = [...new Set(inventory.map(i => i.category))];
+      const locs = [...new Set(inventory.map(i => i.location))];
+
+      cats.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; catSel.appendChild(o); });
+      locs.forEach(l => { const o = document.createElement('option'); o.value=l; o.textContent=l; locSel.appendChild(o); });
+      categories.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; fCat.appendChild(o); });
+    }
+
+    function renderKpis(){
+      const totalSkus = state.data.length;
+      const totalUnits = state.data.reduce((a,b)=> a + b.stock, 0);
+      const lowCount = state.data.filter(i => i.stock <= i.reorder && i.stock > 0).length;
+      const outCount = state.data.filter(i => i.stock === 0).length;
+      const invValue = state.data.reduce((a,b)=> a + (b.stock * b.price), 0);
+
+      const kpiHost = $('#kpis');
+      kpiHost.innerHTML = '';
+
+      const cards = [
+        {label:'Total SKUs', value: fmt(totalSkus), delta:'+'+fmt(Math.max(1, Math.round(totalSkus*.03)))+' new'},
+        {label:'Units On Hand', value: fmt(totalUnits), delta: fmt(Math.round(totalUnits*.06))+' inbound'},
+        {label:'Inventory Value', value: fmtINR(invValue), delta: 'avg '+fmtINR(invValue / Math.max(1,totalUnits))+'/unit'},
+        {label:'Alerts', value: `${lowCount} low · ${outCount} out`, delta: 'review needed'}
+      ];
+
+      cards.forEach((c, idx)=>{
+        const card = document.createElement('div');
+        card.className = 'card kpi';
+        card.innerHTML = `
+          <div class="label">${c.label}</div>
+          <div class="value">${c.value}</div>
+          <div class="chip" style="margin-top:8px">${c.delta}</div>
+          <svg class="spark" viewBox="0 0 120 40" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 30 C 20 ${25-idx*3}, 40 ${18+idx*2}, 60 ${12+idx*4} S 100 ${8+idx*2}, 120 ${10+idx}" fill="none" stroke="url(#grad${idx})" stroke-width="3"/>
+            <defs>
+              <linearGradient id="grad${idx}" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="var(--accent-1)"/>
+                <stop offset="100%" stop-color="var(--accent-2)"/>
+              </linearGradient>
+            </defs>
+          </svg>`;
+        kpiHost.appendChild(card);
+      });
+    }
+
+    function applyFilters(){
+      const q = state.q.trim().toLowerCase();
+      const filtered = inventory.filter(it => {
+        const matchesQ = !q || [it.sku, it.name, it.category, it.location].some(v => String(v).toLowerCase().includes(q));
+        const matchesCat = !state.category || it.category === state.category;
+        const matchesLoc = !state.location || it.location === state.location;
+        const h = health(it.stock, it.reorder).cls;
+        const matchesStock = !state.stock || h === state.stock;
+        return matchesQ && matchesCat && matchesLoc && matchesStock;
+      });
+      state.data = filtered;
+      state.page = 1;
+    }
+
+    function sortData(){
+      const {sortKey, sortDir} = state;
+      const dir = sortDir === 'asc' ? 1 : -1;
+      const collator = new Intl.Collator(undefined, {numeric:true, sensitivity:'base'});
+      state.data.sort((a,b)=>{
+        let va = a[sortKey]; let vb = b[sortKey];
+        if(sortKey === 'updated'){ va = new Date(a.updated); vb = new Date(b.updated); }
+        if(sortKey === 'value'){ va = a.stock * a.price; vb = b.stock * b.price; }
+        if(typeof va === 'string' && typeof vb === 'string') return dir * collator.compare(va, vb);
+        return dir * ((va > vb) - (va < vb));
+      });
+    }
+
+    function renderTable(){
+      const tbody = $('#inventoryTable tbody');
+      tbody.innerHTML = '';
+
+      sortData();
+
+      const start = (state.page - 1) * state.pageSize;
+      const pageItems = state.data.slice(start, start + state.pageSize);
+
+      pageItems.forEach(it => {
+        const h = health(it.stock, it.reorder);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${it.sku}</td>
+          <td>${it.name}</td>
+          <td>${it.category}</td>
+          <td style="text-align:right">${fmt(it.stock)}</td>
+          <td style="text-align:right">${fmt(it.reorder)}</td>
+          <td>${it.location}</td>
+          <td>${new Date(it.updated).toLocaleDateString()}</td>
+          <td style="text-align:right">${fmtINR(it.price)}</td>
+          <td style="text-align:right">${fmtINR(it.stock * it.price)}</td>
+          <td><span class="status ${h.cls}">${h.label}</span></td>`;
+        tbody.appendChild(tr);
+      });
+
+      renderPagination();
+      renderKpis();
+      renderActivity();
+    }
+
+    function renderPagination(){
+      const pages = Math.max(1, Math.ceil(state.data.length / state.pageSize));
+      const host = $('#pagination');
+      host.innerHTML = '';
+      const mkBtn = (label, disabled, onClick) => {
+        const b = document.createElement('button');
+        b.className = 'page-btn'; b.textContent = label; b.disabled = disabled; b.addEventListener('click', onClick); return b;
+      };
+      host.appendChild(mkBtn('Prev', state.page <= 1, ()=>{ state.page--; renderTable(); }));
+      const range = [...Array(pages)].map((_,i)=> i+1).slice(Math.max(0, state.page-3), state.page+2);
+      range.forEach(p => {
+        const b = mkBtn(p, false, ()=>{ state.page = p; renderTable(); });
+        if(p === state.page) b.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--ring');
+        host.appendChild(b);
+      });
+      host.appendChild(mkBtn('Next', state.page >= pages, ()=>{ state.page++; renderTable(); }));
+    }
+
+    function renderActivity(){
+      const host = $('#activity');
+      host.innerHTML = '';
+      const events = state.data.slice(0,6).map(it => ({
+        text: `${it.name} • ${health(it.stock, it.reorder).label} stock at ${it.location}`,
+        date: new Date(it.updated).toLocaleString()
+      }));
+      events.forEach(e => {
+        const li = document.createElement('li');
+        li.innerHTML = `<div class="dot"></div><div><div>${e.text}</div><div style="color:var(--muted); font-size:12px">${e.date}</div></div>`;
+        host.appendChild(li);
+      });
+    }
+
+    // =====================
+    // Events
+    // =====================
+    function wireEvents(){
+      $('#searchInput').addEventListener('input', (e)=>{ state.q = e.target.value; applyFilters(); renderTable(); });
+      $('#categoryFilter').addEventListener('change', (e)=>{ state.category = e.target.value; applyFilters(); renderTable(); });
+      $('#locationFilter').addEventListener('change', (e)=>{ state.location = e.target.value; applyFilters(); renderTable(); });
+      $('#stockFilter').addEventListener('change', (e)=>{ state.stock = e.target.value; applyFilters(); renderTable(); });
+
+      $$('#inventoryTable thead th').forEach(th => {
+        th.style.cursor = 'pointer';
+        th.addEventListener('click', ()=>{
+          const key = th.dataset.key; if(!key) return;
+          if(state.sortKey === key){ state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc'; }
+          else { state.sortKey = key; state.sortDir = 'asc'; }
+          renderTable();
+        });
+      });
+
+      $('#exportBtn').addEventListener('click', exportCSV);
+
+      // Modal handling
+      const dlg = $('#addModal');
+      $('#addItemBtn').addEventListener('click', ()=> dlg.showModal());
+      $('#saveItemBtn').addEventListener('click', (ev)=>{
+        ev.preventDefault();
+        addItemFromForm();
+      });
+
+      // Sidebar toggle
+      $('#menuBtn').addEventListener('click', ()=> $('#sidebar').classList.toggle('open'));
+
+      // Theme
+      const savedTheme = localStorage.getItem('theme');
+      if(savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+      $('#themeToggle').addEventListener('click', ()=>{
+        const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', cur);
+        localStorage.setItem('theme', cur);
+      });
+    }
+
+    function addItemFromForm(){
+      const sku = $('#fSku').value.trim();
+      const name = $('#fName').value.trim();
+      const category = $('#fCategory').value;
+      const location = $('#fLocation').value.trim();
+      const stock = Number($('#fStock').value);
+      const reorder = Number($('#fReorder').value);
+      const price = Number($('#fPrice').value);
+      const updated = $('#fUpdated').value || new Date().toISOString().slice(0,10);
+
+      if(!sku || !name || !location || Number.isNaN(stock) || Number.isNaN(reorder) || Number.isNaN(price)){
+        toast('Please fill all fields correctly.');
+        return;
+      }
+      inventory.unshift({ sku, name, category, location, stock, reorder, price, updated });
+      applyFilters(); renderTable();
+      $('#addModal').close();
+      toast('Item added.');
+
+      // Reset form
+      $$('#addModal input').forEach(i=> i.value='');
+      $('#fCategory').value = categories[0];
+    }
+
+    function exportCSV(){
+      const rows = [['SKU','Name','Category','Stock','Reorder','Location','Updated','Price','StockValue']];
+      state.data.forEach(it => {
+        rows.push([it.sku, it.name, it.category, it.stock, it.reorder, it.location, it.updated, it.price, (it.stock*it.price).toFixed(2)]);
+      });
+      const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'inventory.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // =====================
+    // Boot
+    // =====================
+    initFilters();
+    applyFilters();
+    wireEvents();
+    renderTable();
+  </script>
+  <script>
+    function showSuccess(message) {
+    // Create overlay
+    const overlay = document.createElement("div");
+    overlay.style.position = "fixed";
+    overlay.style.top = 0;
+    overlay.style.left = 0;
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,0.4)";
+    overlay.style.display = "flex";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.zIndex = 9999;
+
+    // Create message box
+    const box = document.createElement("div");
+    box.style.background  = "#0437F2"; 
+    box.style.padding = "20px 30px";
+    box.style.borderRadius = "50px";
+    box.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
+    box.style.fontFamily = "sans-serif";
+    box.style.textAlign = "center";
+    box.innerText = "Login Success!";
+
+    // Append to overlay
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    // Auto close after 2 seconds
+    setTimeout(() => {
+        overlay.remove();
+    }, 1000);
+}
+window.onload = function () {
+  const hash = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  const accessToken = params.get('access_token');
+
+  async function loadDashboard() {
+    // Always try the protected API with cookies
+    const res = await fetch('https://localhost:9443/api/dashboard', {
+      credentials: 'include'
+    });
+    if (res.status === 401) {
+      // Not authenticated → go to login
+      window.location.href = '/';
+      return;
+    }
+    const data = await res.json();
+    showSuccess(data.message);
+  }
+
+  (async () => {
+    if (accessToken) {
+      // First arrival from OAuth: set HttpOnly cookie, then clear the hash
+      await fetch('https://localhost:9443/api/set-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token: accessToken }),
+        credentials: 'include'
+      });
+      // Remove tokens from URL to avoid leaking them and to make refreshes clean
+      window.history.replaceState({}, document.title, '/dashboard.html');
+    }
+    // Whether first login or refresh, now rely on the cookie
+    await loadDashboard();
+  })();
+};
+</script>
+</body>
+</html>
