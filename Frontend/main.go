@@ -15,39 +15,51 @@ import (
 )
 
 func main() {
-	// --- If cert/key missing, generate them ---
-	if _, err := os.Stat("cert.pem"); os.IsNotExist(err) {
-		log.Println("cert.pem not found — generating self-signed cert...")
-		if err := generateSelfSignedCert([]string{"localhost", "127.0.0.1", "::1"}); err != nil {
-			log.Fatalf("failed to generate cert: %v", err)
+	// Check if running on Render (PORT env var is set)
+	port := os.Getenv("PORT")
+	if port == "" {
+		// Local dev mode — HTTPS
+		if _, err := os.Stat("cert.pem"); os.IsNotExist(err) {
+			log.Println("cert.pem not found — generating self-signed cert...")
+			if err := generateSelfSignedCert([]string{"localhost", "127.0.0.1", "::1"}); err != nil {
+				log.Fatalf("failed to generate cert: %v", err)
+			}
+			log.Println("Generated cert.pem and key.pem")
 		}
-		log.Println("Generated cert.pem and key.pem")
+		setupStaticFiles()
+		addr := ":8443"
+		log.Printf("Starting LOCAL HTTPS server at https://localhost%s\n", addr)
+		if err := http.ListenAndServeTLS(addr, "cert.pem", "key.pem", nil); err != nil {
+			log.Fatalf("ListenAndServeTLS: %v", err)
+		}
+	} else {
+		// Render/Production mode — HTTP only
+		setupStaticFiles()
+		addr := ":" + port
+		log.Printf("Starting HTTP server at http://0.0.0.0%s\n", addr)
+		if err := http.ListenAndServe(addr, nil); err != nil {
+			log.Fatalf("ListenAndServe: %v", err)
+		}
 	}
+}
+
+func setupStaticFiles() {
 	if _, err := os.Stat("static"); os.IsNotExist(err) {
 		if err := os.Mkdir("static", 0755); err != nil {
 			log.Fatalf("mkdir static: %v", err)
 		}
 		index := `<!doctype html>
 <html>
-<head><meta charset="utf-8"><title>HTTPS Test</title></head>
+<head><meta charset="utf-8"><title>Go Web</title></head>
 <body>
-  <h1>HTTPS via Go — Hello, secure world!</h1>
+  <h1>Hello from Go!</h1>
   <p>Served from <code>static/index.html</code></p>
 </body>
 </html>`
 		_ = os.WriteFile("static/index.html", []byte(index), 0644)
 	}
-
-	// --- Serve static files ---
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/", fs)
-
-	addr := ":8443"
-	log.Printf("Starting HTTPS server at https://localhost%s\n", addr)
-	if err := http.ListenAndServeTLS(addr, "cert.pem", "key.pem", nil); err != nil {
-		log.Fatalf("ListenAndServeTLS: %v", err)
-	}
-
 }
 
 func generateSelfSignedCert(hosts []string) error {
@@ -55,8 +67,6 @@ func generateSelfSignedCert(hosts []string) error {
 	if err != nil {
 		return err
 	}
-
-	// serial number
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
@@ -68,9 +78,8 @@ func generateSelfSignedCert(hosts []string) error {
 		Subject: pkix.Name{
 			Organization: []string{"Local Dev"},
 		},
-		NotBefore: time.Now().Add(-1 * time.Hour),
-		NotAfter:  time.Now().Add(365 * 24 * time.Hour), // 1 year
-
+		NotBefore:             time.Now().Add(-1 * time.Hour),
+		NotAfter:              time.Now().Add(365 * 24 * time.Hour),
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
@@ -89,7 +98,6 @@ func generateSelfSignedCert(hosts []string) error {
 		return err
 	}
 
-	// write cert.pem
 	certOut, err := os.Create("cert.pem")
 	if err != nil {
 		return err
@@ -100,7 +108,6 @@ func generateSelfSignedCert(hosts []string) error {
 	}
 	certOut.Close()
 
-	// write key.pem (0600)
 	keyOut, err := os.OpenFile("key.pem", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
@@ -111,6 +118,5 @@ func generateSelfSignedCert(hosts []string) error {
 		return err
 	}
 	keyOut.Close()
-
 	return nil
 }
