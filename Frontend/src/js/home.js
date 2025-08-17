@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "../css/home.css"; // corrected import path
 
 function googleLogin() {
-  window.location.href = "https://localhost:9443/api/login/google";
+  window.location.href = "https://cloudinventorymanagement.onrender.com/api/login/google";
 }
 
 function LoginModal({ closeModal, switchToSignup }) {
