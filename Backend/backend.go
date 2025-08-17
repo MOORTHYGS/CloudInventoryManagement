@@ -18,7 +18,7 @@ func main() {
 		supabaseURL = "https://opvifyrwxktzyuyskhme.supabase.co"
 	}
 
-	frontendOrigin := "https://localhost:8443"
+	frontendOrigin := "https://localhost:3000"
 	redirectAfterLogin := "https://localhost:9443/api/auth/callback"
 
 	http.HandleFunc("/api/login/google", func(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +59,7 @@ func loginWithGoogle(w http.ResponseWriter, r *http.Request, supabaseURL, redire
 }
 
 func authCallback(w http.ResponseWriter, r *http.Request, frontendOrigin string) {
-	http.Redirect(w, r, frontendOrigin+"/dashboard.html", http.StatusFound)
+	http.Redirect(w, r, frontendOrigin+"/dashboard", http.StatusFound)
 }
 
 // Add your Supabase JWT secret here (get it from your Supabase project settings)
@@ -86,7 +86,7 @@ func validateJWT(tokenString string) (*jwt.Token, error) {
 // Middleware Authentication for users by access token
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		enableCORS(&w, r, "https://localhost:8443") // Always set CORS headers
+		enableCORS(&w, r, "https://localhost:3000") // Always set CORS headers
 
 		if r.Method == "OPTIONS" { // Handle preflight
 			w.WriteHeader(http.StatusOK)
@@ -122,7 +122,7 @@ func dashboardAPI(w http.ResponseWriter, _ *http.Request) {
 }
 
 func setTokenHandler(w http.ResponseWriter, r *http.Request) {
-	enableCORS(&w, r, "https://localhost:8443") // <-- Add this
+	enableCORS(&w, r, "https://localhost:3000") // <-- Add this
 
 	if r.Method == "OPTIONS" {
 		w.WriteHeader(http.StatusOK)

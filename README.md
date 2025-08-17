@@ -1,15 +1,25 @@
-# ☁️ Cloud Inventory Management
+Cloud Inventory Management – Authentication Module
 
-A modern, scalable, and efficient **Cloud-based Inventory Management System** designed to streamline the process of tracking, managing, and analyzing inventory data in real time.
+This project is a full-stack authentication system built with:
 
-## 📌 Overview
-Cloud Inventory Management is our innovative solution that eliminates manual inventory tracking and provides businesses with:
-- Real-time stock updates
-- Cloud storage for accessibility from anywhere
-- Detailed analytics and reporting
-- Easy integration with other business tools
+Backend: Go (net/http) with Supabase Google OAuth integration
 
-This project is under development
+Frontend: React (React Router)
 
----
+Auth: Supabase JWT stored in secure HTTP-only cookies
 
+Security: HTTPS with self-signed certificates
+
+🔧 Features
+
+Google login via Supabase
+
+Secure JWT validation on backend
+
+HTTP-only cookies (no token leaks to JS)
+
+React dashboard with session management
+
+CORS-enabled API with cookie support
+
+Automatic redirect and token cleanup from URL
