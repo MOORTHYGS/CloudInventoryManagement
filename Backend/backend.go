@@ -40,7 +40,7 @@ func main() {
 
 	addr := ":9443"
 	log.Printf("Backend API running at https://localhost%s", addr)
-	log.Fatal(http.ListenAndServeTLS(addr, "./cert.pem", "./key.pem", nil))
+	log.Fatal(http.ListenAndServe(addr, nil)) 
 }
 
 func enableCORS(w *http.ResponseWriter, r *http.Request, origin string) {
