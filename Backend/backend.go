@@ -38,9 +38,15 @@ func main() {
 
 	http.HandleFunc("/api/set-token", setTokenHandler)
 
-	addr := ":9443"
-	log.Printf("Backend API running at https://localhost%s", addr)
-	log.Fatal(http.ListenAndServe(addr, nil)) 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "10000" // fallback for local
+	}
+
+	addr := ":" + port
+	fmt.Printf("Backend API running at %s\n", addr)
+
+	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
 func enableCORS(w *http.ResponseWriter, r *http.Request, origin string) {
