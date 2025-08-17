@@ -11,7 +11,7 @@ export function Dashboardpage() {
 
     if (accessToken) {
       // Send token to backend -> set as secure HTTP-only cookie
-      fetch("https://localhost:9443/api/set-token", {
+      fetch("https://cloudinventorymanagement.onrender.com/api/set-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ access_token: accessToken }),
@@ -21,7 +21,7 @@ export function Dashboardpage() {
         window.history.replaceState({}, document.title, "/dashboard");
 
         // Fetch protected resource using cookie
-        fetch("https://localhost:9443/api/dashboard", {
+        fetch("https://cloudinventorymanagement.onrender.com/api/dashboard", {
           credentials: "include",
         })
           .then((res) => res.json())
