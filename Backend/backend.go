@@ -18,7 +18,7 @@ func main() {
 		supabaseURL = "https://opvifyrwxktzyuyskhme.supabase.co"
 	}
 
-	frontendOrigin := "https://cloudinventorymanagement-1.onrender.com/"
+	frontendOrigin := "https://cloudinventorymanagement-1.onrender.com"
 	redirectAfterLogin := "https://cloudinventorymanagement.onrender.com/api/auth/callback"
 
 	http.HandleFunc("/api/login/google", func(w http.ResponseWriter, r *http.Request) {
@@ -92,7 +92,7 @@ func validateJWT(tokenString string) (*jwt.Token, error) {
 // Middleware Authentication for users by access token
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		enableCORS(&w, r, "https://localhost:3000") // Always set CORS headers
+		enableCORS(&w, r, "https://cloudinventorymanagement-1.onrender.com") // Always set CORS headers
 
 		if r.Method == "OPTIONS" { // Handle preflight
 			w.WriteHeader(http.StatusOK)
@@ -128,7 +128,7 @@ func dashboardAPI(w http.ResponseWriter, _ *http.Request) {
 }
 
 func setTokenHandler(w http.ResponseWriter, r *http.Request) {
-	enableCORS(&w, r, "https://localhost:3000") // <-- Add this
+	enableCORS(&w, r, "https://cloudinventorymanagement-1.onrender.com") // <-- Add this
 
 	if r.Method == "OPTIONS" {
 		w.WriteHeader(http.StatusOK)
