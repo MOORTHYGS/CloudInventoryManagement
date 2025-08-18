@@ -18,8 +18,8 @@ func main() {
 		supabaseURL = "https://opvifyrwxktzyuyskhme.supabase.co"
 	}
 
-	frontendOrigin := "https://localhost:3000"
-	redirectAfterLogin := "https://localhost:9443/api/auth/callback"
+	frontendOrigin := "https://cloudinventorymanagement-1.onrender.com/"
+	redirectAfterLogin := "https://cloudinventorymanagement.onrender.com/api/auth/callback"
 
 	http.HandleFunc("/api/login/google", func(w http.ResponseWriter, r *http.Request) {
 		enableCORS(&w, r, frontendOrigin)
