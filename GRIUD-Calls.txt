@@ -1,0 +1,195 @@
+🌐 Cloud Inventory Management – End-to-End Flow
+1. System Entry – Customer Onboarding
+
+Who? → A new company (customer) wants to use your system.
+
+Action:
+
+POST /customers → Register customer (name, contact_info, login creds).
+
+Store secure password_hash.
+
+Result: Customer account is created.
+
+👉 At this stage, customer = the organization owner.
+
+2. Customer Login (Authentication)
+
+Action:
+
+POST /customers/login with { user_name, password }.
+
+Result:
+
+Returns JWT token → used for secure requests.
+
+Next: Customer now acts as system admin to create tenants.
+
+3. Tenant Creation
+
+A customer might have multiple tenants (think of them as companies, divisions, or branches under the customer).
+
+Action:
+
+POST /customers/:customer_id/tenants with { name, domain }.
+
+Result:
+
+A tenant record is created (linked to customer).
+
+Next: This tenant will host users, inventory, warehouses, etc.
+
+4. User Management (by Tenant Admin)
+
+Inside a tenant, you need staff (Admin, Manager, Staff).
+
+Action:
+
+POST /tenants/:tenant_id/users
+
+Payload: { name, email, password, role }.
+
+Result: Users are created inside the tenant.
+
+Next:
+
+Admin → manages everything.
+
+Manager → manages inventory, suppliers.
+
+Staff → daily stock/transactions.
+
+5. User Login (for Inventory Operations)
+
+Each tenant’s user logs in separately.
+
+Action:
+
+POST /tenants/:tenant_id/users/login
+
+Result:
+
+Returns a JWT specific to that user + tenant.
+
+Next: User now interacts with inventory.
+
+6. Setup Master Data
+
+Before doing transactions, the tenant admin/manager sets up:
+
+Categories
+
+POST /tenants/:tenant_id/categories → “Electronics”, “Furniture”, etc.
+
+Warehouses
+
+POST /tenants/:tenant_id/warehouses → e.g., “Main WH”, “Branch WH”.
+
+Suppliers & Customers (business partners).
+
+POST /tenants/:tenant_id/suppliers
+
+POST /tenants/:tenant_id/customers (optional for B2B).
+
+7. Inventory Items
+
+Add stock items under categories.
+
+Action:
+
+POST /tenants/:tenant_id/inventory_items
+
+Payload: { sku, name, category_id, unit, price }
+
+Result: Inventory item exists, but stock = 0 initially.
+
+8. Stock Management
+
+Maintain stock levels in each warehouse.
+
+Two ways stock changes:
+
+Direct stock updates → inventory_stock.
+
+Transactions (preferred).
+
+Transactions Flow:
+
+POST /tenants/:tenant_id/transactions
+
+type: IN → Add stock (from supplier).
+
+type: OUT → Remove stock (to customer).
+
+type: TRANSFER → Move stock from one warehouse to another.
+
+type: ADJUST → Manual correction.
+
+👉 Transactions automatically update inventory_stock.
+
+9. Reorder & Notifications
+
+If stock falls below reorder_level, system triggers:
+
+Notification/email/webhook.
+
+Stored in settings or audit_logs.
+
+10. Audit Logs
+
+Every CRUD action creates an entry in audit_logs.
+
+Example: Adding inventory, deleting a user, stock transfer.
+
+11. Subscriptions & Payments (SaaS Layer)
+
+Customers must pay to keep their tenants active.
+
+Plans: plans table (monthly, yearly).
+
+Subscriptions: POST /customers/:id/subscriptions → assign a plan.
+
+Payments: POST /payments when they pay via Razorpay/Stripe.
+
+System auto-checks subscription expiry → disables tenant if unpaid.
+
+12. Settings & Customization
+
+Tenant can configure app-level preferences (currency, notifications, reports).
+
+Stored in settings table.
+
+🚀 Example End-to-End Use Case
+
+Moorthy (customer) signs up → gets customer account.
+
+Logs in → creates tenant “Hosur Factory”.
+
+Creates tenant users (Admin: Me, Manager: Ravi, Staff: Karthik).
+
+Manager sets up:
+
+Categories (Raw Material, Finished Goods).
+
+Warehouses (Main WH, Secondary WH).
+
+Suppliers (ABC Metals).
+
+Adds item: Steel Rods, price ₹100.
+
+Transaction:
+
+IN → 100 Steel Rods from supplier.
+
+TRANSFER → Move 20 to Secondary WH.
+
+OUT → 10 rods sold to customer.
+
+Staff updates daily transactions.
+
+Audit logs keep track.
+
+Subscription plan expires → system auto-locks tenant until payment.
+
+👉 That’s the complete lifecycle flow:
+Customer → Tenant → Users → Setup Master Data → Inventory & Transactions → Payments → Audit.

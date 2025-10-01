@@ -1,0 +1,30 @@
+.hero1 {
+  background: rgba(84, 95, 141, 0.1); /* Transparent white layer */
+  backdrop-filter: blur(10px);          /* Glass blur effect */
+  -webkit-backdrop-filter: blur(10px);  /* Safari support */
+  border-radius: 50px;   
+  color:aliceblue;               /* Optional: rounded corners */
+}
+/* Darken modal content */
+.modal-content {
+  background-color: #251e54; /* matching dark overlay or custom dark */
+  color: #fff; /* make text readable */
+  border-radius: 12px; /* optional: softer corners */
+  border: none; /* remove default border */
+}
+
+/* Optional: darken input fields inside modal */
+.modal-content .form-control {
+  background-color: #180d52;
+  color: #fff;
+  border: 1px solid #5a547a;
+}
+
+.modal-content .form-control::placeholder {
+  color: #ccc;
+}
+
+/* Optional: adjust modal header & footer buttons */
+.modal-header, .modal-footer {
+  border: none;
+}

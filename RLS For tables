@@ -1,0 +1,172 @@
+-- ============================================================
+-- Enable RLS
+-- ============================================================
+ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE warehouses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory_stock ENABLE ROW LEVEL SECURITY;
+ALTER TABLE suppliers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stock_transfers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- Users table → each user sees only their row
+-- ============================================================
+CREATE POLICY "Users can view their own profile"
+ON users FOR SELECT
+USING (id = auth.uid());
+
+CREATE POLICY "Users can update their own profile"
+ON users FOR UPDATE
+USING (id = auth.uid());
+
+-- ============================================================
+-- Generic template for tenant-based tables
+-- ============================================================
+-- Replace <TABLE> with table name
+-- Example for inventory_items given below
+
+-- SELECT
+CREATE POLICY "Tenant select on inventory_items"
+ON inventory_items FOR SELECT
+USING (
+  tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid())
+);
+
+-- INSERT
+CREATE POLICY "Tenant insert on inventory_items"
+ON inventory_items FOR INSERT
+WITH CHECK (
+  tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid())
+);
+
+-- UPDATE
+CREATE POLICY "Tenant update on inventory_items"
+ON inventory_items FOR UPDATE
+USING (
+  tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid())
+);
+
+-- DELETE (optional, if you want tenant users to delete)
+CREATE POLICY "Tenant delete on inventory_items"
+ON inventory_items FOR DELETE
+USING (
+  tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid())
+);
+
+-- ============================================================
+-- Apply same tenant policies to all tenant-bound tables
+-- ============================================================
+
+-- Warehouses
+CREATE POLICY "Tenant select on warehouses"
+ON warehouses FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on warehouses"
+ON warehouses FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant update on warehouses"
+ON warehouses FOR UPDATE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant delete on warehouses"
+ON warehouses FOR DELETE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Categories
+CREATE POLICY "Tenant select on categories"
+ON categories FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on categories"
+ON categories FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant update on categories"
+ON categories FOR UPDATE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant delete on categories"
+ON categories FOR DELETE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Inventory Stock
+CREATE POLICY "Tenant select on inventory_stock"
+ON inventory_stock FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on inventory_stock"
+ON inventory_stock FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant update on inventory_stock"
+ON inventory_stock FOR UPDATE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant delete on inventory_stock"
+ON inventory_stock FOR DELETE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Suppliers
+CREATE POLICY "Tenant select on suppliers"
+ON suppliers FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on suppliers"
+ON suppliers FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant update on suppliers"
+ON suppliers FOR UPDATE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant delete on suppliers"
+ON suppliers FOR DELETE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Customers
+CREATE POLICY "Tenant select on customers"
+ON customers FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on customers"
+ON customers FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant update on customers"
+ON customers FOR UPDATE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant delete on customers"
+ON customers FOR DELETE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Transactions
+CREATE POLICY "Tenant select on transactions"
+ON transactions FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on transactions"
+ON transactions FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant update on transactions"
+ON transactions FOR UPDATE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant delete on transactions"
+ON transactions FOR DELETE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Stock Transfers
+CREATE POLICY "Tenant select on stock_transfers"
+ON stock_transfers FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on stock_transfers"
+ON stock_transfers FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant update on stock_transfers"
+ON stock_transfers FOR UPDATE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant delete on stock_transfers"
+ON stock_transfers FOR DELETE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Subscriptions
+CREATE POLICY "Tenant select on subscriptions"
+ON subscriptions FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on subscriptions"
+ON subscriptions FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant update on subscriptions"
+ON subscriptions FOR UPDATE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant delete on subscriptions"
+ON subscriptions FOR DELETE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Payments
+CREATE POLICY "Tenant select on payments"
+ON payments FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on payments"
+ON payments FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant update on payments"
+ON payments FOR UPDATE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant delete on payments"
+ON payments FOR DELETE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Audit Logs
+CREATE POLICY "Tenant select on audit_logs"
+ON audit_logs FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on audit_logs"
+ON audit_logs FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+
+-- Settings
+CREATE POLICY "Tenant select on settings"
+ON settings FOR SELECT USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant insert on settings"
+ON settings FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant update on settings"
+ON settings FOR UPDATE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Tenant delete on settings"
+ON settings FOR DELETE USING (tenant_id = (SELECT tenant_id FROM users WHERE id = auth.uid()));

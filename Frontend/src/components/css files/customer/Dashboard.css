@@ -1,0 +1,14 @@
+.card-glass .card {
+  color:white ;
+  background-color: #07102ce2;  /* Single color */
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+}
+
+.card-glass .card:hover {
+  transform: translateY(-5px);
+  transition: 0.3s ease-in-out;
+  background: rgba(59, 60, 80, 0.25);
+}

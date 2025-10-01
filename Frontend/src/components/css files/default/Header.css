@@ -1,0 +1,24 @@
+/* Match dropdown background to navbar/glass style */
+.dropdown-menu.dropdown-menu-end {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  color: #e6eef8; /* text color */
+}
+
+/* Dropdown items text color */
+.dropdown-menu.dropdown-menu-end .dropdown-item {
+  color: #e6eef8;
+}
+
+/* Hover effect for dropdown items */
+.dropdown-menu.dropdown-menu-end .dropdown-item:hover {
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+  color: #fff;
+}
+
+/* Optional: divider color */
+.dropdown-menu.dropdown-menu-end .dropdown-divider {
+  border-color: rgba(255,255,255,0.08);
+}
